@@ -1,0 +1,142 @@
+---
+title: "Ecology Assignment 2"
+author: "Daphne Virlar"
+output:
+  html_document:
+    df_print: paged
+    theme: yeti
+---
+
+
+
+
+##1. Patterns in Yield Over Time
+
+```{r, echo = FALSE, message= FALSE}
+#Load libraries
+library(tidyverse)
+
+#wrangle data
+grains <- read.csv("grain.csv")
+
+grain_plot <- ggplot(grains, aes(x= year, y= yield))+
+  #geom_line()+
+  geom_point(pch = 1)+
+  facet_wrap(~commodity, scale = "free")+
+  xlab("\n Year")+
+  ylab("Total Yield (bushels/acre) \n")+
+  ggtitle("Total Crop Yield Through Time For Various Agricultural Commodities \n")+
+  theme_classic()+
+  theme(panel.spacing = unit(2, "lines"),  #this adds space between the facet wrapped plots
+        plot.title = element_text(hjust = 0.5)) 
+
+grain_plot
+```
+
+###### As evidenced by the graphs above, total crop yield for all four crops (barley, corn, oats, and sorghum) have increased throughout the twentieth century.
+
+<br>
+<br>
+
+B. Barley and Corn both seem to exhibit a linear, lower plateau (LLP) statistical model. Oats also seem to follow the LLP model, but the data is noisier. For sorghum, it's difficult to tell. I would say it starts out resembling the LLP model, but then tapers off into a quadratic plateau.
+
+
+
+```{r gganimate_tilman, include = FALSE}
+#library(ggimage)
+#library(gganimate)
+
+#tilman <- "tilman.png"
+
+#animate_grain <- ggplot(grains, aes(x = year, y = yield, group = commodity)) +
+ # geom_line(aes(color = commodity)) +
+  #geom_image(aes(image = tilman)) +
+  #geom_text(aes(label = commodity, color = commodity), 
+           # position = position_nudge(y = 1, x = 1), size = 10) +
+#  transition_reveal(commodity, year)+
+ # labs(color = "Commodity")+
+  #facet_wrap(~commodity, scale = "free")
+
+#animate_grain
+
+#animate(animate_grain, nframes = 50, renderer = gifski_renderer("Virlar_Daphne_extra1.gif"))
+```
+
+<P style="page-break-before: always">
+<br>
+<br>
+
+##2. Fertilizer Use
+```{r, echo= FALSE, warning= FALSE}
+fert <- suppressMessages(read_csv("fertilizer.csv"))
+
+fert <- fert %>% 
+  mutate(fertilizer = case_when(
+    fertilizer == "nitrogen" ~ "Nitrogen",
+    fertilizer == "phosphate" ~ "Phosphate",
+    fertilizer == "potassium" ~ "Potassium"))
+
+
+fert_plot <- ggplot(fert, aes(x = year, y = as.numeric(ppa), color=fertilizer))+
+  geom_point()+
+  facet_wrap(~crop)+
+  ggtitle("Fertilizer User Through Time Across Crops \n")+ 
+  xlab("\n Year")+
+  ylab("Pounds Applied per Acre \n")+
+  labs(color = "Fertilizer")+
+  scale_x_continuous(limits=c(1964, 2016),
+                   breaks=c(1970, 1990, 2010))+
+  theme_classic()+
+  theme(panel.spacing = unit(2, "lines"),  #this adds space between the facet wrapped plots
+        plot.title = element_text(hjust = 0.5)) 
+
+
+fert_plot
+
+```
+
+###### The graph above describes the difference in fertilizer use for different crops (corn, soybeans, and wheat) in the US between the years 1964 and 2016. Additionally, fertilizers are broken down by their main element/molecule. 
+
+<br>
+<br>
+
+B. The graph above indicates that corn and wheat are receiving more nitrogren rich fertilizer than phosphate and potassium. This suggests tha nitrogen is a limited resource for both crops. Alternatively, soybeans are getting hit with more potassium rich fertilizer, suggesting that is their limiting resource. 
+
+<P style="page-break-before: always">
+<br>
+<br>
+
+##3. Corn Yield & Fertilizer Use
+```{r, echo= FALSE, message=FALSE, warning=FALSE}
+
+#Merge data to get yield and fertilizer in the same data frame
+corn <- fert %>%
+  filter(crop == "Corn")
+
+grains_new <- grains %>% 
+  rename(crop = commodity) %>% 
+  select(crop, yield, year)
+
+corn_merge <- merge(corn, grains_new, by=c("crop","year"))
+
+corn_plot <- ggplot(corn_merge, aes(y = yield, x = ppa, color=year))+
+  geom_point()+
+  facet_wrap(~fertilizer, scale="free_x")+
+  ggtitle("Fertilizer User Through Time Across Crops \n")+ 
+  xlab("Pounds Applied per Acre \n")+
+  ylab("\n Crop Yield")+
+  labs(color = "Year")+
+  theme_classic()+
+  theme(panel.spacing = unit(1, "lines"),  #this adds space between the facet wrapped plots
+        plot.title = element_text(hjust = 0.5)) 
+
+
+corn_plot
+```
+
+###### The graph above describes the difference in fertilizer use for corn in the US between the years 1964 and 2016, and how the amount has affected crop yield. Additionally, fertilizers are broken down by their main element/molecule. Phosphate seems to have a positive linear 
+
+<br>
+<br>
+
+B. Nitrogen and potassium-based fertilizer do not exhibit a positive linear relationship between yield and fertilizer. Instead, they indicate an exponential relationship. Phosphate 
